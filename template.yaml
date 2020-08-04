@@ -105,12 +105,12 @@ Resources:
         - AttributeDataType: String
           Name: email
           Required: false
-    AngularPoolClient:
-      Type: AWS::Cognito::UserPoolClient
-      Properties:
-        UserPoolId: !Ref MyCognitoUserPool
-        ClientName: !Ref CognitoUserPoolClientName
-        GenerateSecret: false
+  AngularPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref MyCognitoUserPool
+      ClientName: !Ref CognitoAppClientName
+      GenerateSecret: false
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function

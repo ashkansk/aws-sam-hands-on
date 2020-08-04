@@ -5,48 +5,82 @@ Description: Hands-on application for using Lambda alongside with ApiGateway and
 Globals:
   Function:
     Timeout: 20
+    Runtime: java11
+    MemorySize: 512
+    Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+      Variables:
+        TABLE_NAME: !Ref OrdersTable
+        ENDPOINT_OVERRIDE: ""
 
 Parameters:
+  # environment parameter
+  EnvType:
+    Description: Environment type.
+    Default: test
+    Type: String
+    AllowedValues:
+      - prod
+      - test
+    ConstraintDescription: must specify prod or test.
+  # copied from https://github.com/awslabs/serverless-application-model/blob/master/examples/2016-10-31/api_cognito_auth/template.yaml
   CognitoUserPoolName:
     Type: String
     Default: MyUserPool
-
-  CognitoUserPoolClientName:
+  CognitoAppClientName:
     Type: String
-    Default: MyUserPoolClient
+    Default: angular-app-client
+
+Conditions:
+  IsProd: !Equals [ !Ref EnvType, prod ]
 
 Resources:
-  ApiGatewayApi:
-    Type: AWS::Serverless::Api
+  MyApiGateway:
+    Type: AWS::Serverless::HttpApi
     Properties:
-      StageName: Prod
-
-      # Allows www.example.com to call these APIs
-      # SAM will automatically add AllowMethods with a list of methods for this API
-      Cors: "'www.example.com'"
-
-      DefinitionBody:
-        'Fn::Transform':
-          Name: 'AWS::Include'
-          # Replace <bucket> with your bucket name
-          Parameters:
-            Location: s3://<bucket>/swagger.yaml
-  HelloWorldFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+      StageName: !Ref EnvType
+      # All APIs are defined in a single swagger file
+      DefinitionUri: ./swagger.yaml
+      FailOnWarnings: true
+      CorsConfiguration:
+        AllowHeaders:
+          - x-apigateway-header
+        AllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+        # Allows all domains to call these APIs
+        # SAM will automatically add AllowMethods with a list of methods for this API
+        AllowOrigins:
+          - *
+        ExposeHeaders:
+          - x-amzn-header
+  GetLambdaFunction1:
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: HelloWorldFunction
-      Handler: helloworld.App::handleRequest
-      Runtime: java11
-      MemorySize: 512
-      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
-        Variables:
-          PARAM1: VALUE
+      Handler: com.arkasoft.awssamhandson.firstlambda.App::handleRequest
       Events:
-        HelloWorld:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+        ProxyApiRoot:
+          Type: Api
           Properties:
-            Path: /hello
-            Method: get
+            RestApiId: !Ref MyApiGateway
+            Path: /get1
+            Method: GET
+  GetLambdaFunction2:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: HelloWorldFunction
+      Handler: com.arkasoft.awssamhandson.secondlambda.App::handleRequest
+      Events:
+        ProxyApiRoot:
+          Type: Api
+          Properties:
+            RestApiId: !Ref MyApiGateway
+            Path: /get2
+            Method: GET
+
+  # copied from https://github.com/awslabs/serverless-application-model/blob/master/examples/2016-10-31/api_cognito_auth/template.yaml
   MyCognitoUserPool:
     Type: AWS::Cognito::UserPool
     Properties:
@@ -60,8 +94,7 @@ Resources:
         - AttributeDataType: String
           Name: email
           Required: false
-
-    MyCognitoUserPoolClient:
+    AngularPoolClient:
       Type: AWS::Cognito::UserPoolClient
       Properties:
         UserPoolId: !Ref MyCognitoUserPool
@@ -72,9 +105,9 @@ Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  HelloWorldApi:
+  ApiUrl:
     Description: "API Gateway endpoint URL for Prod stage for Hello World function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/${EnvType}/"
   HelloWorldFunction:
     Description: "Hello World Lambda Function ARN"
     Value: !GetAtt HelloWorldFunction.Arn

@@ -25,7 +25,7 @@ Parameters:
   # copied from https://github.com/awslabs/serverless-application-model/blob/master/examples/2016-10-31/api_cognito_auth/template.yaml
   CognitoUserPoolName:
     Type: String
-    Default: MyUserPool
+    Default: SamHandsOnUserPool
   CognitoAppClientName:
     Type: String
     Default: angular-app-client
@@ -34,57 +34,71 @@ Conditions:
   IsProd: !Equals [ !Ref EnvType, prod ]
 
 Resources:
-  #  MyApiGateway:
-  #    Type: AWS::Serverless::HttpApi
-  #    Properties:
-  #      StageName: !Ref EnvType
-  #      # All APIs are defined in a single swagger file
-  #      DefinitionUri: ./swagger.yaml
-  #      FailOnWarnings: true
-  #      CorsConfiguration:
-  #        AllowHeaders:
-  #          - x-apigateway-header
-  #        AllowMethods:
-  #          - GET
-  #          - POST
-  #          - PUT
-  #          - DELETE
-  #        # Allows all domains to call these APIs
-  #        # SAM will automatically add AllowMethods with a list of methods for this API
-  #        AllowOrigins:
-  #          - '*'
-  #        ExposeHeaders:
-  #          - x-amzn-header
-  GetLambdaFunction1:
+  MyApiGateway:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: !Ref EnvType
+      # All APIs are defined in a single swagger file (commented for now)
+      # DefinitionUri: ./swagger.yaml
+      FailOnWarnings: true
+      CorsConfiguration:
+        AllowHeaders:
+          - x-apigateway-header
+        AllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+        # Allows all domains to call these APIs
+        # SAM will automatically add AllowMethods with a list of methods for this API
+        AllowOrigins:
+          - '*'
+        ExposeHeaders:
+          - x-amzn-header
+      # auth copied from https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-property-httpapi-oauth2authorizer.html
+      Auth:
+        Authorizers:
+          CognitoAuthorizer:
+            AuthorizationScopes:
+              - scope1
+            JwtConfiguration:
+              issuer: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${MyCognitoUserPool}"
+              audience:
+                - MyApiGateway
+            IdentitySource: "$request.querystring.param"
+        DefaultAuthorizer: CognitoAuthorizer
+  MyGetFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: aws-sam-handson-first-lambda
       Handler: com.arkasoft.awssamhandson.firstlambda.App::handleRequest
       Events:
         ProxyApiRoot:
-          Type: Api
+          Type: HttpApi
           Properties:
-            #ApiId: !Ref MyApiGateway
-            Path: /get1
+            ApiId: !Ref MyApiGateway
+            Path: /get
             Method: GET
-  #  GetLambdaFunction2:
-  #    Type: AWS::Serverless::Function
-  #    Properties:
-  #      CodeUri: aws-sam-handson-second-lambda
-  #      Handler: com.arkasoft.awssamhandson.secondlambda.App::handleRequest
-  #      Events:
-  #        ProxyApiRoot:
-  #          Type: Api
-  #          Properties:
-  #            ApiId: !Ref MyApiGateway
-  #            Path: /get2
-  #            Method: GET
+  MyPostFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: aws-sam-handson-second-lambda
+      Handler: com.arkasoft.awssamhandson.secondlambda.App::handleRequest
+      Events:
+        ProxyApiRoot:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref MyApiGateway
+            Path: /my-resource
+            Method: POST
   SamHandsOnTable:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: sam-handson
       AttributeDefinitions:
         - AttributeName: id
+          AttributeType: S
+        - AttributeName: name
           AttributeType: S
       KeySchema:
         - AttributeName: id
@@ -118,5 +132,5 @@ Outputs:
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
   ApiUrl:
     Description: "API Gateway endpoint URL for Prod stage for Hello World function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/${EnvType}/"
+    Value: !Sub "https://${MyApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${EnvType}/"
 

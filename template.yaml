@@ -9,7 +9,7 @@ Globals:
     MemorySize: 512
     Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
       Variables:
-        TABLE_NAME: !Ref OrdersTable
+        TABLE_NAME: !Ref SamHandsOn
         ENDPOINT_OVERRIDE: ""
 
 Parameters:
@@ -52,7 +52,7 @@ Resources:
         # Allows all domains to call these APIs
         # SAM will automatically add AllowMethods with a list of methods for this API
         AllowOrigins:
-          - *
+          - '*'
         ExposeHeaders:
           - x-amzn-header
   GetLambdaFunction1:
@@ -108,9 +108,4 @@ Outputs:
   ApiUrl:
     Description: "API Gateway endpoint URL for Prod stage for Hello World function"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/${EnvType}/"
-  HelloWorldFunction:
-    Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt HelloWorldFunction.Arn
-  HelloWorldFunctionIamRole:
-    Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt HelloWorldFunctionRole.Arn
+

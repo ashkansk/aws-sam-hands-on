@@ -4,13 +4,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>com.arkasoft</groupId>
     <artifactId>aws-sam-handson-parent</artifactId>
+    <groupId>com.arkasoft</groupId>
     <version>1.0</version>
   </parent>
-  <artifactId>aws-sam-handson-second-lambda</artifactId>
+  <artifactId>aws-sam-handson-third-lambda</artifactId>
   <packaging>jar</packaging>
-  <name>AWS SAM Hands-On Second Lambda Module</name>
-  <description>The second lambda module</description>
+  <name>AWS SAM Hands-On Third Lambda Module</name>
+  <description>The third lambda module</description>
 
 </project>

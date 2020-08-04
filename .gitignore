@@ -3,5 +3,5 @@
 **/*.iml
 
 # generated files
-target
-
+**/target
+**/.aws-sam

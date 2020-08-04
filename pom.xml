@@ -13,8 +13,8 @@
   </properties>
   <modules>
     <module>aws-sam-handson-first-lambda</module>
-    <module>aws-sam-handson-second-lambda</module>
     <module>aws-sam-handson-third-lambda</module>
+    <module>aws-sam-handson-second-lambda</module>
   </modules>
 
   <dependencies>

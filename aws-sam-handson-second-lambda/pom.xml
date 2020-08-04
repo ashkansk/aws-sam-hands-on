@@ -9,9 +9,9 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>aws-sam-handson-third-lambda</artifactId>
+  <artifactId>aws-sam-handson-second-lambda</artifactId>
   <packaging>jar</packaging>
-  <name>AWS SAM Hands-On Third Lambda Module</name>
-  <description>The third lambda module</description>
+  <name>AWS SAM Hands-On Second Lambda Module</name>
+  <description>The second lambda module</description>
 
 </project>

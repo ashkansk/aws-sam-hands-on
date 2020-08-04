@@ -9,7 +9,7 @@ Globals:
     MemorySize: 512
     Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
       Variables:
-        TABLE_NAME: !Ref SamHandsOn
+        TABLE_NAME: !Ref SamHandsOnTable
         ENDPOINT_OVERRIDE: ""
 
 Parameters:
@@ -34,51 +34,62 @@ Conditions:
   IsProd: !Equals [ !Ref EnvType, prod ]
 
 Resources:
-  MyApiGateway:
-    Type: AWS::Serverless::HttpApi
-    Properties:
-      StageName: !Ref EnvType
-      # All APIs are defined in a single swagger file
-      DefinitionUri: ./swagger.yaml
-      FailOnWarnings: true
-      CorsConfiguration:
-        AllowHeaders:
-          - x-apigateway-header
-        AllowMethods:
-          - GET
-          - POST
-          - PUT
-          - DELETE
-        # Allows all domains to call these APIs
-        # SAM will automatically add AllowMethods with a list of methods for this API
-        AllowOrigins:
-          - '*'
-        ExposeHeaders:
-          - x-amzn-header
+  #  MyApiGateway:
+  #    Type: AWS::Serverless::HttpApi
+  #    Properties:
+  #      StageName: !Ref EnvType
+  #      # All APIs are defined in a single swagger file
+  #      DefinitionUri: ./swagger.yaml
+  #      FailOnWarnings: true
+  #      CorsConfiguration:
+  #        AllowHeaders:
+  #          - x-apigateway-header
+  #        AllowMethods:
+  #          - GET
+  #          - POST
+  #          - PUT
+  #          - DELETE
+  #        # Allows all domains to call these APIs
+  #        # SAM will automatically add AllowMethods with a list of methods for this API
+  #        AllowOrigins:
+  #          - '*'
+  #        ExposeHeaders:
+  #          - x-amzn-header
   GetLambdaFunction1:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: HelloWorldFunction
+      CodeUri: aws-sam-handson-first-lambda
       Handler: com.arkasoft.awssamhandson.firstlambda.App::handleRequest
       Events:
         ProxyApiRoot:
           Type: Api
           Properties:
-            RestApiId: !Ref MyApiGateway
+            #ApiId: !Ref MyApiGateway
             Path: /get1
             Method: GET
-  GetLambdaFunction2:
-    Type: AWS::Serverless::Function
+  #  GetLambdaFunction2:
+  #    Type: AWS::Serverless::Function
+  #    Properties:
+  #      CodeUri: aws-sam-handson-second-lambda
+  #      Handler: com.arkasoft.awssamhandson.secondlambda.App::handleRequest
+  #      Events:
+  #        ProxyApiRoot:
+  #          Type: Api
+  #          Properties:
+  #            ApiId: !Ref MyApiGateway
+  #            Path: /get2
+  #            Method: GET
+  SamHandsOnTable:
+    Type: AWS::DynamoDB::Table
     Properties:
-      CodeUri: HelloWorldFunction
-      Handler: com.arkasoft.awssamhandson.secondlambda.App::handleRequest
-      Events:
-        ProxyApiRoot:
-          Type: Api
-          Properties:
-            RestApiId: !Ref MyApiGateway
-            Path: /get2
-            Method: GET
+      TableName: sam-handson
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
 
   # copied from https://github.com/awslabs/serverless-application-model/blob/master/examples/2016-10-31/api_cognito_auth/template.yaml
   MyCognitoUserPool:

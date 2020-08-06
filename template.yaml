@@ -56,16 +56,16 @@ Resources:
         ExposeHeaders:
           - x-amzn-header
       # auth copied from https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-property-httpapi-oauth2authorizer.html
+      # for jwt configuration see https://docs.aws.amazon.com/cognito/latest/developerguide/amazon-cognito-user-pools-using-tokens-with-identity-providers.html
+      # and also https://docs.aws.amazon.com/cognito/latest/developerguide/amazon-cognito-integrating-user-pools-with-identity-pools.html
       Auth:
         Authorizers:
           CognitoAuthorizer:
-            AuthorizationScopes:
-              - scope1
             JwtConfiguration:
               issuer: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${MyCognitoUserPool}"
               audience:
-                - MyApiGateway
-            IdentitySource: "$request.querystring.param"
+                - !Ref AngularPoolClient
+            IdentitySource: "$request.header.Authorization"
         DefaultAuthorizer: CognitoAuthorizer
   MyGetFunction:
     Type: AWS::Serverless::Function

@@ -26,9 +26,15 @@ Parameters:
   CognitoUserPoolName:
     Type: String
     Default: SamHandsOnUserPool
-  CognitoAppClientName:
+  CognitoUserPoolClientName:
     Type: String
     Default: angular-app-client
+  #  CognitoIdentityProviderName:
+  #    Type: String
+  #    Default: CognitoUserPoolIdentityProvider
+  CogClientCallbackUrl:
+    Type: String
+    Default: localhost:4200
 
 Conditions:
   IsProd: !Equals [ !Ref EnvType, prod ]
@@ -62,9 +68,9 @@ Resources:
         Authorizers:
           CognitoAuthorizer:
             JwtConfiguration:
-              issuer: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${MyCognitoUserPool}"
+              issuer: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${CognitoUserPool}"
               audience:
-                - !Ref AngularPoolClient
+                - !Ref CognitoUserPoolClient
             IdentitySource: "$request.header.Authorization"
         DefaultAuthorizer: CognitoAuthorizer
   MyGetFunction:
@@ -98,33 +104,91 @@ Resources:
       AttributeDefinitions:
         - AttributeName: id
           AttributeType: S
-        - AttributeName: name
-          AttributeType: S
       KeySchema:
         - AttributeName: id
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
 
   # copied from https://github.com/awslabs/serverless-application-model/blob/master/examples/2016-10-31/api_cognito_auth/template.yaml
-  MyCognitoUserPool:
+  # and also improved by aws CloudFormation docs
+  CognitoUserPool:
     Type: AWS::Cognito::UserPool
     Properties:
       UserPoolName: !Ref CognitoUserPoolName
       Policies:
         PasswordPolicy:
           MinimumLength: 8
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: false
+          RequireUppercase: true
+      # only allow admin to create users (no sign up for users)
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: true
+        UnusedAccountValidityDays: 15
+        # InviteMessageTemplate:
+        #   EmailSubject: "Your account details"
+        #   EmailMessage: "uncomment this if you want to customize the message"
+        #   SMSMessage: "uncomment this if you want to customize the message"
       UsernameAttributes:
         - email
+        - phone_number
+      # During a user pool update, you can add new schema attributes but you cannot modify or delete an existing schema attribute.
       Schema:
         - AttributeDataType: String
+          Name: phone_number
+          Required: true
+        - AttributeDataType: String
           Name: email
+          Required: true
+        # set required to false to prevent this error: "Required custom attributes are not supported currently".
+        - AttributeDataType: String
+          Name: first_name
           Required: false
-  AngularPoolClient:
+        - AttributeDataType: String
+          Name: last_name
+          Required: false
+      # The attributes to be auto-verified. Possible values: email, phone_number.
+      # AutoVerifiedAttributes:
+      #  - String
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_phone_number
+            Priority: 1
+          - Name: verified_email
+            Priority: 2
+  CognitoUserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      UserPoolId: !Ref CognitoUserPool
+      Domain: ashkansk
+  CognitoUserPoolClient:
     Type: AWS::Cognito::UserPoolClient
     Properties:
-      UserPoolId: !Ref MyCognitoUserPool
-      ClientName: !Ref CognitoAppClientName
+      UserPoolId: !Ref CognitoUserPool
+      ClientName: !Ref CognitoUserPoolClientName
       GenerateSecret: false
+      SupportedIdentityProviders:
+        - COGNITO
+      AllowedOAuthFlows:
+        - code
+        - implicit
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthScopes:
+        - aws.cognito.signin.user.admin
+        - phone
+        - email
+        - openid
+        - profile
+      CallbackURLs:
+        - !Ref CogClientCallbackUrl
+      PreventUserExistenceErrors: ENABLED
+#  CognitoIdentityProvider:
+#    Type: AWS::Cognito::UserPoolIdentityProvider
+#    Properties:
+#      ProviderName: !Ref CognitoIdentityProviderName
+#      ProviderType: LoginWithAmazon
+#      UserPoolId: String
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function

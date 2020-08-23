@@ -1,7 +1,8 @@
 <template>
   <div>
-    <div v-for="(p, i) in products" :key="p.code">
-      {{ i }}. {{ p.title }}
+    <router-link to="/add-product" tag="button">+ Add</router-link>
+    <div class="row" v-for="(p, i) in products" :key="p.code">
+      {{ i }}. {{p.code}} - {{ p.title }} - {{p.price}}
     </div>
   </div>
 </template>
@@ -11,9 +12,6 @@ import Vue from 'vue'
 
 export default Vue.extend({
   name: 'ProductList',
-  props: {
-    msg: String
-  },
   data () {
     return {
       value: process.env.VUE_APP_SOME_NAME,
@@ -34,3 +32,10 @@ export default Vue.extend({
   }
 })
 </script>
+
+<style scoped>
+
+.row {
+  margin: 10px 10px;
+}
+</style>

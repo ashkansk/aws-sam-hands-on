@@ -1,6 +1,6 @@
 <template>
-  <div id="signup">
-    <div class="signup-form">
+  <div id="confirm">
+    <div class="confirm-form">
       <form @submit.prevent="onSubmit">
         <div class="input">
           <label for="email">Mail</label>
@@ -10,25 +10,14 @@
             v-model="email">
         </div>
         <div class="input">
-          <label for="password">Password</label>
+          <label for="validationCode">Validation Code</label>
           <input
-            type="password"
-            id="password"
-            v-model="password">
-        </div>
-        <div class="input">
-          <label for="confirm-password">Confirm Password</label>
-          <input
-            type="password"
-            id="confirm-password"
-            v-model="confirmPassword">
-        </div>
-        <div class="input inline">
-          <input type="checkbox" id="terms" v-model="terms">
-          <label for="terms">Accept Terms of Use</label>
+            type="text"
+            id="validationCode"
+            v-model="validationCode">
         </div>
         <div class="submit">
-          <button type="submit">Submit</button>
+          <button type="submit">Confirm Your Account</button>
         </div>
       </form>
     </div>
@@ -39,25 +28,23 @@
 import Vue from 'vue'
 
 export default Vue.extend({
-  name: 'Signup',
+  name: 'Confirm',
   data() {
     return {
       email: '',
-      password: '',
-      confirmPassword: '',
-      terms: false
+      validationCode: ''
     }
   },
   methods: {
     onSubmit() {
-      this.$store.dispatch('signup', {email: this.email, password: this.password})
+      this.$store.dispatch('confirm', {email: this.email, password: this.validationCode})
     }
   }
 })
 </script>
 
 <style scoped>
-.signup-form {
+.confirm-form {
   width: 400px;
   margin: 30px auto;
   border: 1px solid #eee;
@@ -75,10 +62,6 @@ export default Vue.extend({
   margin-bottom: 6px;
 }
 
-.input.inline label {
-  display: inline;
-}
-
 .input input {
   font: inherit;
   width: 100%;
@@ -87,37 +70,10 @@ export default Vue.extend({
   border: 1px solid #ccc;
 }
 
-.input.inline input {
-  width: auto;
-}
-
 .input input:focus {
   outline: none;
   border: 1px solid #521751;
   background-color: #eee;
-}
-
-.input select {
-  border: 1px solid #ccc;
-  font: inherit;
-}
-
-.hobbies button {
-  border: 1px solid #521751;
-  background: #521751;
-  color: white;
-  padding: 6px;
-  font: inherit;
-  cursor: pointer;
-}
-
-.hobbies button:hover,
-.hobbies button:active {
-  background-color: #8d4288;
-}
-
-.hobbies input {
-  width: 90%;
 }
 
 .submit button {

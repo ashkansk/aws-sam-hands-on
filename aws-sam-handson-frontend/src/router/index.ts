@@ -1,40 +1,38 @@
 import Vue from 'vue'
-import VueRouter, { RouteConfig } from 'vue-router'
+import VueRouter, { NavigationGuardNext, Route, RouteConfig } from 'vue-router'
+
+import store from '../store/index'
+
 import Home from '../views/Home.vue'
 import ProductList from '../product/ProductList.vue'
 import AddProduct from '../product/AddProduct.vue'
 import Signin from '../auth/Signin.vue'
+import Signup from '../auth/Signup.vue'
+import Confirm from '../auth/Confirm.vue'
 
 Vue.use(VueRouter)
 
+function authGuard(to: Route, from: Route, next: NavigationGuardNext<Vue>) {
+  if (store.state.auth.isAuthenticated) {
+    next()
+  } else {
+    next('/signin')
+  }
+}
+
 const routes: Array<RouteConfig> = [
+  { path: '/', component: Home, beforeEnter: authGuard },
+  { path: '/products', component: ProductList, beforeEnter: authGuard },
+  { path: '/add-product', component: AddProduct, beforeEnter: authGuard },
+  { path: '/signin', component: Signin },
+  { path: '/signup', component: Signup },
+  { path: '/confirm', component: Confirm },
   {
-    path: '/',
-    name: 'Home',
-    component: Home
-  },
-  {
-    path: '/about',
-    name: 'About',
-    // route level code-splitting
+    path: '/about',    // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
-  },
-  {
-    path: '/signin',
-    name: 'Sign In',
-    component: Signin
-  },
-  {
-    path: '/products',
-    name: 'Products',
-    component: ProductList
-  },
-  {
-    path: '/add-product',
-    name: 'Add Product',
-    component: AddProduct
+    component: () => import(/* webpackChunkName: "about" */ '../views/About.vue'),
+    beforeEnter: authGuard
   }
 ]
 

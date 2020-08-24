@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import { AuthenticationDetails, CognitoUser, CognitoUserPool, CognitoUserSession } from 'amazon-cognito-identity-js'
+import router from '@/router';
 
 const POOL_DATA = {
   UserPoolId: 'us-east-2_gi2UXA7ny',
@@ -12,21 +13,32 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    auth: null
+    auth: {
+      isAuthenticated: false,
+      jwtToken: '',
+      username: ''
+    }
   },
   getters: {},
   /* mutations must be synchronous */
   mutations: {
-    setUserAuth (state, auth) {
-      state.auth = auth
+    authenticateUser(state, userData) {
+      state.auth.isAuthenticated = true
+      state.auth.jwtToken = userData.jwtToken
+      state.auth.username = USER_POOL.getCurrentUser()?.getUsername() ?? ''
+    },
+    signoutUser(state) {
+      state.auth.isAuthenticated = false
+      state.auth.jwtToken = ''
+      state.auth.username = ''
     }
   },
   /* actions can be asynchronous but can only commit the state change after the async task is completed */
   actions: {
-    // signup ({ commit }, userData: User) {
-    //
-    // },
-    signin ({ commit }, payload) {
+    signup({ commit }, payload) {
+
+    },
+    signin({ commit }, payload) {
       const authData = {
         Username: payload.email,
         Password: payload.password
@@ -38,14 +50,40 @@ export default new Vuex.Store({
       }
       const cognitoUser = new CognitoUser(userData)
       cognitoUser.authenticateUser(authDetails, {
-        onSuccess (result: CognitoUserSession) {
+        onSuccess(result: CognitoUserSession) {
           console.log(result)
-          commit('setUserAuth', result)
+          commit('authenticateUser', {
+            jwtToken: result.getIdToken().getJwtToken()
+          });
+          router.push('/');
         },
-        onFailure (err) {
-          console.log(err)
+        onFailure(err) {
+          console.log(err);
         }
       })
+    },
+    initAuth({ commit }) {
+      // initialize the auth data (put jwt token in store if the user is logged in previously)
+      // TODO also the code below should be changed to support refreshing the token if it's expired
+      const currentUser = USER_POOL.getCurrentUser()
+      if (currentUser) {
+        currentUser.getSession(function (err: any, session: any) {
+          if (err || !session || !session.isValid()) {
+            return;
+          }
+          commit('authenticateUser', { jwtToken: session.getIdToken().getJwtToken() });
+        })
+      }
+    },
+    confirm({ commit }, payload) {
+      console.log(payload);
+    },
+    signout({ commit }) {
+      const currentUser = USER_POOL.getCurrentUser()
+      if (currentUser) {
+        currentUser.signOut();
+        commit('signoutUser');
+      }
     }
   },
   modules: {}

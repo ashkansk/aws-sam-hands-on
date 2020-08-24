@@ -29,15 +29,15 @@ import Vue from 'vue'
 
 export default Vue.extend({
   name: 'Signin',
-  data () {
+  data() {
     return {
       email: '',
       password: ''
     }
   },
   methods: {
-    onSubmit () {
-      this.$store.dispatch('signin', { email: this.email, password: this.password })
+    onSubmit() {
+      this.$store.dispatch('signin', {email: this.email, password: this.password})
     }
   }
 })

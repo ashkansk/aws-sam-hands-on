@@ -8,7 +8,7 @@
         |
         <router-link to="/products">Products</router-link>
         |
-        <a href="#" @click="$store.dispatch('signout')">Sign Out</a>
+        <a href="javascript:void(null)" @click="$store.dispatch('signout')">Sign Out</a>
       </span>
       <span v-if="!$store.state.auth.isAuthenticated">
         <router-link to="/signin">Sign In</router-link>
@@ -21,18 +21,6 @@
     <router-view/>
   </div>
 </template>
-
-<script>
-import Vue from 'vue'
-
-export default Vue.extend({
-  name: 'Signin',
-  created() {
-    this.$store.dispatch('initAuth')
-  }
-})
-
-</script>
 
 <style lang="scss">
 #app {

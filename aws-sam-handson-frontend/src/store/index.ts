@@ -17,8 +17,7 @@ export default new Vuex.Store({
       isAuthenticated: false,
       jwtToken: '',
       username: ''
-    },
-    authInitCompleted: false
+    }
   },
   getters: {},
   /* mutations must be synchronous */
@@ -27,15 +26,11 @@ export default new Vuex.Store({
       state.auth.isAuthenticated = true
       state.auth.jwtToken = userData.jwtToken
       state.auth.username = USER_POOL.getCurrentUser()?.getUsername() ?? ''
-      state.authInitCompleted = true;
     },
     signoutUser(state) {
       state.auth.isAuthenticated = false
       state.auth.jwtToken = ''
       state.auth.username = ''
-    },
-    authInitComplete(state) {
-      state.authInitCompleted = true;
     }
   },
   /* actions can be asynchronous but can only commit the state change after the async task is completed */
@@ -75,7 +70,7 @@ export default new Vuex.Store({
     },
     initAuth({ commit }) {
       // initialize the auth data (put jwt token in store if the user is logged in previously)
-      // TODO also the code below should be changed to support refreshing the token if it's expired
+      // TODO also the code below should be changed to check the validity of the token and refresh the token if it's expired
       const currentUser = USER_POOL.getCurrentUser()
       if (currentUser) {
         currentUser.getSession(function (err: any, session: any) {
@@ -85,7 +80,6 @@ export default new Vuex.Store({
           commit('authenticateUser', { jwtToken: session.getIdToken().getJwtToken() });
         })
       }
-      commit('authInitComplete');
     },
     confirm({ commit }, payload) {
       console.log(payload);

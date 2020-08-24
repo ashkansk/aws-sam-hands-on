@@ -24,7 +24,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import Vue from 'vue'
 
 export default Vue.extend({
@@ -37,7 +37,7 @@ export default Vue.extend({
   },
   methods: {
     onSubmit() {
-      this.$store.dispatch('signin', {email: this.email, password: this.password})
+      this.$store.dispatch('signin', { email: this.email, password: this.password })
     }
   }
 })

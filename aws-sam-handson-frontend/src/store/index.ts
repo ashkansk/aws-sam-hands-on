@@ -17,7 +17,8 @@ export default new Vuex.Store({
       isAuthenticated: false,
       jwtToken: '',
       username: ''
-    }
+    },
+    authInitCompleted: false
   },
   getters: {},
   /* mutations must be synchronous */
@@ -26,15 +27,24 @@ export default new Vuex.Store({
       state.auth.isAuthenticated = true
       state.auth.jwtToken = userData.jwtToken
       state.auth.username = USER_POOL.getCurrentUser()?.getUsername() ?? ''
+      state.authInitCompleted = true;
     },
     signoutUser(state) {
       state.auth.isAuthenticated = false
       state.auth.jwtToken = ''
       state.auth.username = ''
+    },
+    authInitComplete(state) {
+      state.authInitCompleted = true;
     }
   },
   /* actions can be asynchronous but can only commit the state change after the async task is completed */
   actions: {
+    // setSignoutTimer({ commit }, expirationTime) {
+    //   setTimeout(() => {
+    //     commit('signoutUser');
+    //   }, expirationTime);
+    // },
     signup({ commit }, payload) {
 
     },
@@ -55,7 +65,8 @@ export default new Vuex.Store({
           commit('authenticateUser', {
             jwtToken: result.getIdToken().getJwtToken()
           });
-          router.push('/');
+
+          router.replace('/');
         },
         onFailure(err) {
           console.log(err);
@@ -74,6 +85,7 @@ export default new Vuex.Store({
           commit('authenticateUser', { jwtToken: session.getIdToken().getJwtToken() });
         })
       }
+      commit('authInitComplete');
     },
     confirm({ commit }, payload) {
       console.log(payload);
@@ -83,6 +95,7 @@ export default new Vuex.Store({
       if (currentUser) {
         currentUser.signOut();
         commit('signoutUser');
+        router.replace('/signin')
       }
     }
   },

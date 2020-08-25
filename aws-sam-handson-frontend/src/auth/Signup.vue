@@ -10,6 +10,13 @@
             v-model="email">
         </div>
         <div class="input">
+          <label for="phoneNumber">PhoneNumber</label>
+          <input
+            type="text"
+            id="phoneNumber"
+            v-model="phoneNumber">
+        </div>
+        <div class="input">
           <label for="password">Password</label>
           <input
             type="password"
@@ -43,6 +50,7 @@ export default Vue.extend({
   data() {
     return {
       email: '',
+      phoneNumber: '',
       password: '',
       confirmPassword: '',
       terms: false
@@ -50,7 +58,12 @@ export default Vue.extend({
   },
   methods: {
     onSubmit() {
-      this.$store.dispatch('signup', { email: this.email, password: this.password })
+      if (this.password !== this.confirmPassword)
+        alert("Passwords do not match!");
+      else if (!this.terms)
+        alert("Please accept the terms!");
+      else
+        this.$store.dispatch('signup', { email: this.email, phoneNumber: this.phoneNumber, password: this.password })
     }
   }
 })

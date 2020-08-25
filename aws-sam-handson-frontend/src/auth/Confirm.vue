@@ -37,7 +37,7 @@ export default Vue.extend({
   },
   methods: {
     onSubmit() {
-      this.$store.dispatch('confirm', { email: this.email, password: this.validationCode })
+      this.$store.dispatch('confirm', { email: this.email, code: this.validationCode })
     }
   }
 })

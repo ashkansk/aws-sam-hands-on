@@ -122,10 +122,9 @@ Resources:
           RequireNumbers: true
           RequireSymbols: false
           RequireUppercase: true
-      # only allow admin to create users (no sign up for users)
       AdminCreateUserConfig:
-        AllowAdminCreateUserOnly: true
-        UnusedAccountValidityDays: 15
+        AllowAdminCreateUserOnly: false
+        # UnusedAccountValidityDays: 15 # default is 7 days
         # InviteMessageTemplate:
         #   EmailSubject: "Your account details"
         #   EmailMessage: "uncomment this if you want to customize the message"
@@ -149,13 +148,14 @@ Resources:
           Name: last_name
           Required: false
       # The attributes to be auto-verified. Possible values: email, phone_number.
-      # AutoVerifiedAttributes:
-      #  - String
+      # This causes to send a verification message to email/phone_number with a verification code
+      AutoVerifiedAttributes:
+        - email
       AccountRecoverySetting:
         RecoveryMechanisms:
-          - Name: verified_phone_number
-            Priority: 1
           - Name: verified_email
+            Priority: 1
+          - Name: verified_phone_number
             Priority: 2
   CognitoUserPoolDomain:
     Type: AWS::Cognito::UserPoolDomain

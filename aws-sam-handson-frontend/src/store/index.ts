@@ -1,6 +1,12 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import { AuthenticationDetails, CognitoUser, CognitoUserPool, CognitoUserSession } from 'amazon-cognito-identity-js'
+import {
+  AuthenticationDetails,
+  CognitoUser,
+  CognitoUserAttribute,
+  CognitoUserPool,
+  CognitoUserSession
+} from 'amazon-cognito-identity-js'
 import router from '@/router';
 
 const POOL_DATA = {
@@ -41,7 +47,25 @@ export default new Vuex.Store({
     //   }, expirationTime);
     // },
     signup({ commit }, payload) {
-
+      const attributeList: CognitoUserAttribute[] = [];
+      const emailAttribute = {
+        Name: 'email',
+        Value: payload.email
+      };
+      attributeList.push(new CognitoUserAttribute(emailAttribute));
+      const phoneNumberAttribute = {
+        Name: 'phone_number',
+        Value: payload.phoneNumber
+      };
+      attributeList.push(new CognitoUserAttribute(phoneNumberAttribute));
+      USER_POOL.signUp(payload.email, payload.password, attributeList, [], (err, result) => {
+        if (err) {
+          console.log(err);
+          return;
+        }
+        console.log(result);
+        router.push('/confirm');
+      });
     },
     signin({ commit }, payload) {
       const authData = {
@@ -82,7 +106,20 @@ export default new Vuex.Store({
       }
     },
     confirm({ commit }, payload) {
-      console.log(payload);
+      const userData = {
+        Username: payload.email,
+        Pool: USER_POOL
+      };
+      const cognitoUser = new CognitoUser(userData);
+      cognitoUser.confirmRegistration(payload.code, true, (err, result) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        // else
+        console.log(result);
+        router.replace('/');
+      });
     },
     signout({ commit }) {
       const currentUser = USER_POOL.getCurrentUser()

@@ -126,7 +126,7 @@ Resources:
         AllowAdminCreateUserOnly: false
         # UnusedAccountValidityDays: 15 # default is 7 days
         # InviteMessageTemplate:
-        #   EmailSubject: "Your account details"
+        #   EmailSubject: "subject, e.g: Your account details"
         #   EmailMessage: "uncomment this if you want to customize the message"
         #   SMSMessage: "uncomment this if you want to customize the message"
       UsernameAttributes:

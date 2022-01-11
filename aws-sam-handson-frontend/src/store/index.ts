@@ -97,13 +97,17 @@ export default new Vuex.Store({
       // TODO also the code below should be changed to check the validity of the token and refresh the token if it's expired
       const currentUser = USER_POOL.getCurrentUser()
       if (currentUser) {
+        console.log('current user is present.');
         currentUser.getSession(function (err: any, session: any) {
           if (err || !session || !session.isValid()) {
+            console.warn('session is not valid.');
             return;
           }
+          console.log('authenticating user');
           commit('authenticateUser', { jwtToken: session.getIdToken().getJwtToken() });
         })
-      }
+      } else
+        console.log('user is not present');
     },
     confirm({ commit }, payload) {
       const userData = {
